@@ -27,7 +27,7 @@ class ResenhasController {
   }
 
   async confirmarPresenca(req, res) {
-    res.json(await resenhasService.confirmarPresenca(req.resenhaId));
+    res.json(await resenhasService.confirmarPresenca(req.resenhaId, req.usuario));
   }
 }
 

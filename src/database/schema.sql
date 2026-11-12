@@ -54,3 +54,36 @@ WHERE codigo_organizador IS NULL;
 
 ALTER TABLE resenhas ALTER COLUMN codigo_organizador SET NOT NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS idx_resenhas_codigo ON resenhas (codigo_organizador);
+
+-- ================= USUÁRIOS (cadastro único por CPF) =================
+-- O CPF NÃO é salvo em texto puro:
+--   cpf_hash     = HMAC-SHA256 do CPF com o SEGREDO_APP (garante que cada CPF só se cadastre uma vez)
+--   cpf_mascarado = só para exibir ao próprio usuário (ex: ***.456.789-**)
+-- A senha é salva com scrypt + salt (nunca em texto puro).
+CREATE TABLE IF NOT EXISTS usuarios (
+    id               SERIAL PRIMARY KEY,
+    nome             VARCHAR(100) NOT NULL,
+    email            VARCHAR(254) NOT NULL UNIQUE,
+    cpf_hash         CHAR(64)     NOT NULL UNIQUE,
+    cpf_mascarado    VARCHAR(14)  NOT NULL,
+    data_nascimento  DATE         NOT NULL,
+    senha_hash       TEXT         NOT NULL,
+    criado_em        TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+-- Sessões de login: guardamos só o SHA-256 do token que fica no cookie.
+CREATE TABLE IF NOT EXISTS sessoes (
+    token_hash  CHAR(64)    PRIMARY KEY,
+    usuario_id  INTEGER     NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    expira_em   TIMESTAMPTZ NOT NULL,
+    criado_em   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_sessoes_usuario ON sessoes (usuario_id);
+
+-- Presenças: cada usuário só confirma uma vez em cada resenha.
+CREATE TABLE IF NOT EXISTS presencas (
+    resenha_id  INTEGER     NOT NULL REFERENCES resenhas(id) ON DELETE CASCADE,
+    usuario_id  INTEGER     NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    criado_em   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (resenha_id, usuario_id)
+);

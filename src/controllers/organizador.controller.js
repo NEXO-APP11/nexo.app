@@ -7,6 +7,10 @@ class OrganizadorController {
     res.json(await resenhasService.buscarPorCodigo(req.body?.codigo));
   }
 
+  async atualizar(req, res) {
+    res.json(await resenhasService.atualizarPorCodigo(req.body?.codigo, req.body ?? {}));
+  }
+
   async excluir(req, res) {
     await resenhasService.removerPorCodigo(req.body?.codigo);
     res.status(204).end();

@@ -1,5 +1,4 @@
 const API = '/api/resenhas';
-const CHAVE_CONFIRMADAS = 'nexo:confirmadas';
 
 const listaEl = document.getElementById('lista-resenhas');
 const statusEl = document.getElementById('status-resenhas');
@@ -12,25 +11,6 @@ const mensagemModal = document.getElementById('mensagem-modal');
 const btnPresenca = document.getElementById('btn-presenca');
 
 let resenhaAberta = null;
-
-
-function lerConfirmadas() {
-  try {
-    return new Set(JSON.parse(localStorage.getItem(CHAVE_CONFIRMADAS)) ?? []);
-  } catch {
-    return new Set();
-  }
-}
-
-function salvarConfirmada(id) {
-  try {
-    const ids = lerConfirmadas();
-    ids.add(id);
-    localStorage.setItem(CHAVE_CONFIRMADAS, JSON.stringify([...ids]));
-  } catch {
-    /* navegador sem armazenamento: ignora */
-  }
-}
 
 /* ================= LISTAGEM ================= */
 
@@ -96,11 +76,18 @@ function abrirDetalhes(resenha) {
 
 function atualizarBotaoPresenca() {
   const r = resenhaAberta;
-  const jaConfirmou = lerConfirmadas().has(r.id);
-  const lotada = r.limite_pessoas && r.confirmados >= r.limite_pessoas;
+  const logado = Boolean(sessaoAtual.usuario);
+  const jaConfirmou = sessaoAtual.presencas.includes(r.id);
+  const lotada = Boolean(r.limite_pessoas) && r.confirmados >= r.limite_pessoas;
 
-  btnPresenca.disabled = jaConfirmou || lotada;
-  btnPresenca.textContent = jaConfirmou ? 'Presença confirmada ✓' : lotada ? 'Lotada' : 'Confirmar presença';
+  btnPresenca.disabled = jaConfirmou || (lotada && logado);
+  btnPresenca.textContent = !logado
+    ? 'Entrar para confirmar'
+    : jaConfirmou
+      ? 'Presença confirmada ✓'
+      : lotada
+        ? 'Lotada'
+        : 'Confirmar presença';
 }
 
 function fecharDetalhes() {
@@ -123,11 +110,17 @@ document.getElementById('btn-fechar').addEventListener('click', fecharDetalhes);
 
 btnPresenca.addEventListener('click', async () => {
   const id = resenhaAberta.id;
-  btnPresenca.disabled = true;
 
+  // Sem login: manda para a página de conta e volta para esta resenha depois
+  if (!sessaoAtual.usuario) {
+    location.href = `conta?voltar=${encodeURIComponent(`/?resenha=${id}`)}`;
+    return;
+  }
+
+  btnPresenca.disabled = true;
   try {
     const atualizada = await requisitar(`${API}/${id}/presenca`, { method: 'POST' });
-    salvarConfirmada(id);
+    sessaoAtual.presencas.push(id);
     abrirDetalhes(atualizada);
     mensagemModal.textContent = 'Presença confirmada! Nos vemos lá 🎉';
     mensagemModal.className = 'form-message sucesso';
@@ -165,68 +158,14 @@ async function abrirResenhaDoLink() {
 
 form.elements.data.min = hojeISO();
 
-// Campo "Valor" só aparece (e é obrigatório) quando a resenha não é gratuita
-const grupoValor = document.getElementById('grupo-valor');
-function atualizarCampoValor() {
-  const paga = form.elements.pagamento.value !== 'gratuito';
-  grupoValor.hidden = !paga;
-  form.elements.valor.required = paga;
-  form.elements.valor.disabled = !paga; // desabilitado = não vai no envio
-}
-form.elements.pagamento.addEventListener('change', atualizarCampoValor);
-form.addEventListener('reset', () => setTimeout(atualizarCampoValor));
-atualizarCampoValor();
-
-// Balão de cidade/estado: ao escolher o estado, sugere as cidades dele (dados do IBGE).
-// Se a internet/IBGE falhar, a pessoa ainda pode digitar a cidade normalmente.
-const campoEstado = form.elements.estado;
-const campoCidade = form.elements.cidade;
-const listaCidades = document.getElementById('lista-cidades');
-const cacheCidades = {};
-
-async function carregarCidades(uf) {
-  if (!cacheCidades[uf]) {
-    const url = `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`;
-    cacheCidades[uf] = fetch(url)
-      .then((r) => (r.ok ? r.json() : []))
-      .then((cidades) => cidades.map((c) => c.nome))
-      .catch(() => {
-        delete cacheCidades[uf];
-        return [];
-      });
-  }
-  return cacheCidades[uf];
-}
-
-campoEstado.addEventListener('change', async () => {
-  const uf = campoEstado.value;
-  campoCidade.value = '';
-  listaCidades.replaceChildren();
-  campoCidade.disabled = !uf;
-  campoCidade.placeholder = uf ? 'Digite a cidade' : 'Escolha o estado primeiro';
-  if (!uf) return;
-
-  const cidades = await carregarCidades(uf);
-  if (campoEstado.value !== uf) return; // trocou de estado enquanto carregava
-  listaCidades.replaceChildren(...cidades.map((nome) => new Option(nome)));
-});
-
-form.addEventListener('reset', () =>
-  setTimeout(() => campoEstado.dispatchEvent(new Event('change')))
-);
+ligarCampoValor(form, document.getElementById('grupo-valor'));
+ligarCamposLocal(form, document.getElementById('lista-cidades'));
 
 form.addEventListener('submit', async (evento) => {
   evento.preventDefault();
   mensagemForm.className = 'form-message';
 
-  if (!form.checkValidity()) {
-    const invalido = form.querySelector(':invalid');
-    const rotulo = form.querySelector(`label[for="${invalido.id}"]`)?.firstChild.textContent.trim();
-    mensagemForm.textContent = `Confira o campo "${rotulo}": ${invalido.validationMessage}`;
-    mensagemForm.classList.add('erro');
-    invalido.focus();
-    return;
-  }
+  if (!validarNoNavegador(form, mensagemForm)) return;
 
   const botao = form.querySelector('[type="submit"]');
   botao.disabled = true;
@@ -254,8 +193,11 @@ form.addEventListener('submit', async (evento) => {
 
 /* ================= INÍCIO ================= */
 
-carregarResenhas();
-abrirResenhaDoLink();
+// Carrega a sessão primeiro para o botão de presença já saber se a pessoa está logada
+carregarSessao().finally(() => {
+  carregarResenhas();
+  abrirResenhaDoLink();
+});
 
 /* ================= CÓDIGO DO ORGANIZADOR ================= */
 
