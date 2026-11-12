@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="NEXO: encontre resenhas perto de você ou crie a sua em poucos passos.">
+    <meta name="theme-color" content="#0f0f12">
+
+    <title>NEXO | Encontre sua resenha</title>
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%238b5cf6'/><text x='50' y='70' font-size='62' font-family='Arial' font-weight='bold' text-anchor='middle' fill='white'>N</text></svg>">
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script>
+</head>
+
+<body>
+
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+    <!-- ================= HEADER ================= -->
+
+    <header class="header">
+
+        <a href="#inicio" class="logo" aria-label="NEXO, voltar ao início">
+            <span>N</span>EXO
+        </a>
+
+        <nav class="menu" aria-label="Navegação principal">
+            <a href="#inicio">Início</a>
+            <a href="#como-funciona">Como funciona</a>
+            <a href="#resenhas">Resenhas</a>
+        </nav>
+
+        <a href="#criar" class="btn-primary">Criar resenha</a>
+
+    </header>
+
+
+    <main id="conteudo">
+
+        <!-- ================= HERO ================= -->
+
+        <section id="inicio" class="hero">
+
+            <div class="hero-content">
+
+                <span class="tag">
+                    <span aria-hidden="true">🎉</span> SEU PRÓXIMO ENCONTRO COMEÇA AQUI
+                </span>
+
+                <h1>
+                    Encontre uma <span>resenha</span>.
+                    <br>
+                    Crie a sua.
+                </h1>
+
+                <p>
+                    O NEXO ajuda você a organizar encontros,
+                    festas e resenhas de forma simples e rápida.
+                </p>
+
+                <div class="hero-buttons">
+                    <a href="#resenhas" class="btn-primary">Explorar resenhas</a>
+                    <a href="#criar" class="btn-secondary">+ Criar uma resenha</a>
+                </div>
+
+            </div>
+
+
+            <!-- Preenchido pelo app.js com a próxima resenha -->
+            <article class="hero-card" id="destaque" aria-live="polite" hidden>
+
+                <div class="card-top">
+                    <span><span aria-hidden="true">🔥</span> Em destaque</span>
+                    <span data-campo="quando"></span>
+                </div>
+
+                <h3 data-campo="nome"></h3>
+
+                <p class="location">
+                    <span aria-hidden="true">📍</span> <span data-campo="local"></span>
+                </p>
+
+                <dl class="event-info">
+                    <div>
+                        <dt><span aria-hidden="true">📅</span><span class="sr-only">Data</span></dt>
+                        <dd data-campo="data"></dd>
+                    </div>
+                    <div>
+                        <dt><span aria-hidden="true">🕐</span><span class="sr-only">Horário</span></dt>
+                        <dd data-campo="horario"></dd>
+                    </div>
+                    <div>
+                        <dt><span aria-hidden="true">🔞</span><span class="sr-only">Idade mínima</span></dt>
+                        <dd data-campo="idade"></dd>
+                    </div>
+                </dl>
+
+                <div class="participants">
+                    <div class="avatars" aria-hidden="true">
+                        <div>A</div>
+                        <div>J</div>
+                        <div>M</div>
+                        <div>+</div>
+                    </div>
+
+                    <p>
+                        <strong data-campo="confirmados"></strong><br>
+                        já confirmaram presença
+                    </p>
+                </div>
+
+                <button type="button" class="btn-primary full" data-acao="detalhes">
+                    Ver resenha
+                </button>
+
+            </article>
+
+        </section>
+
+
+        <!-- ================= COMO FUNCIONA ================= -->
+
+        <section id="como-funciona" class="how">
+
+            <div class="section-title">
+                <span class="tag">COMO FUNCIONA</span>
+                <h2>Sua resenha em poucos passos</h2>
+                <p>
+                    O NEXO reúne tudo que você precisa
+                    para organizar e encontrar encontros.
+                </p>
+            </div>
+
+            <ol class="steps">
+                <li class="step">
+                    <div class="step-number" aria-hidden="true">01</div>
+                    <h3>Crie</h3>
+                    <p>Crie sua resenha e informe data, horário, local e detalhes.</p>
+                </li>
+
+                <li class="step">
+                    <div class="step-number" aria-hidden="true">02</div>
+                    <h3>Organize</h3>
+                    <p>Defina idade permitida, bebidas, comidas, limite de pessoas e outras informações.</p>
+                </li>
+
+                <li class="step">
+                    <div class="step-number" aria-hidden="true">03</div>
+                    <h3>Convide</h3>
+                    <p>Compartilhe o link da sua resenha com seus amigos.</p>
+                </li>
+
+                <li class="step">
+                    <div class="step-number" aria-hidden="true">04</div>
+                    <h3>Participe</h3>
+                    <p>Encontre resenhas e confirme sua presença.</p>
+                </li>
+            </ol>
+
+        </section>
+
+
+        <!-- ================= RESENHAS ================= -->
+
+        <section id="resenhas" class="events">
+
+            <div class="section-title">
+                <span class="tag">RESENHAS</span>
+                <h2>Encontre seu próximo rolê</h2>
+            </div>
+
+            <p class="status" id="status-resenhas" role="status">Carregando resenhas…</p>
+
+            <div class="event-grid" id="lista-resenhas" aria-live="polite"></div>
+
+            <template id="modelo-card">
+                <article class="event-card">
+                    <div class="event-image">
+                        <span class="event-date" data-campo="data-curta"></span>
+                        <span class="age" data-campo="idade"></span>
+                    </div>
+
+                    <div class="event-content">
+                        <h3 data-campo="nome"></h3>
+                        <p><span aria-hidden="true">📍</span> <span data-campo="local"></span></p>
+                        <p><span aria-hidden="true">🕐</span> <span data-campo="horario"></span></p>
+
+                        <div class="event-footer">
+                            <span><span aria-hidden="true">👥</span> <span data-campo="presentes"></span></span>
+                            <button type="button" data-acao="detalhes">Ver detalhes</button>
+                        </div>
+                    </div>
+                </article>
+            </template>
+
+        </section>
+
+
+        <!-- ================= CRIAR RESENHA ================= -->
+
+        <section id="criar" class="create">
+
+            <div class="create-content">
+                <span class="tag">ORGANIZE SEU EVENTO</span>
+                <h2>Crie sua própria resenha</h2>
+                <p>
+                    Informe todos os detalhes e deixe
+                    seus convidados saberem exatamente
+                    como será o encontro.
+                </p>
+            </div>
+
+
+            <form class="event-form" id="form-resenha" novalidate>
+
+                <div class="form-group">
+                    <label for="nome">Nome da resenha</label>
+                    <input id="nome" name="nome" type="text" maxlength="100" required
+                           placeholder="Ex: Resenha da Galera">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="data">Data</label>
+                        <input id="data" name="data" type="date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="horario">Horário</label>
+                        <input id="horario" name="horario" type="time" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="local">Local</label>
+                    <input id="local" name="local" type="text" maxlength="150" required
+                           placeholder="Ex: Chácara do João">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="idade_minima">Idade mínima</label>
+                        <select id="idade_minima" name="idade_minima">
+                            <option value="0">Sem restrição</option>
+                            <option value="16">16 anos</option>
+                            <option value="18">18 anos</option>
+                            <option value="21">21 anos</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="limite_pessoas">Limite de pessoas <span class="opcional">(opcional)</span></label>
+                        <input id="limite_pessoas" name="limite_pessoas" type="number"
+                               min="1" max="10000" step="1" inputmode="numeric" placeholder="Ex: 50">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="bebidas_comidas">Bebidas / comidas <span class="opcional">(opcional)</span></label>
+                    <input id="bebidas_comidas" name="bebidas_comidas" type="text" maxlength="255"
+                           placeholder="Ex: Refrigerante, água, comidas…">
+                </div>
+
+                <div class="form-group">
+                    <label for="descricao">Descrição <span class="opcional">(opcional)</span></label>
+                    <textarea id="descricao" name="descricao" maxlength="1000"
+                              placeholder="Conte mais sobre a resenha…"></textarea>
+                </div>
+
+                <p class="form-message" id="mensagem-form" role="alert"></p>
+
+                <button type="submit" class="btn-primary full">
+                    Criar resenha
+                </button>
+
+            </form>
+
+        </section>
+
+    </main>
+
+
+    <!-- ================= DETALHES (MODAL) ================= -->
+
+    <dialog class="modal" id="modal-detalhes" aria-labelledby="modal-titulo">
+        <div class="modal-image" id="modal-imagem">
+            <span class="event-date" data-campo="data-curta"></span>
+            <span class="age" data-campo="idade"></span>
+        </div>
+
+        <div class="modal-body">
+            <h2 id="modal-titulo" data-campo="nome"></h2>
+
+            <ul class="modal-info">
+                <li><span aria-hidden="true">📅</span> <span data-campo="data"></span></li>
+                <li><span aria-hidden="true">🕐</span> <span data-campo="horario"></span></li>
+                <li><span aria-hidden="true">📍</span> <span data-campo="local"></span></li>
+                <li><span aria-hidden="true">👥</span> <span data-campo="presentes"></span></li>
+                <li data-se="bebidas_comidas"><span aria-hidden="true">🍕</span> <span data-campo="bebidas_comidas"></span></li>
+            </ul>
+
+            <p class="modal-descricao" data-campo="descricao"></p>
+
+            <p class="form-message" id="mensagem-modal" role="status"></p>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" id="btn-compartilhar">Copiar link</button>
+                <button type="button" class="btn-primary" id="btn-presenca">Confirmar presença</button>
+            </div>
+        </div>
+
+        <button type="button" class="modal-close" id="btn-fechar" aria-label="Fechar">×</button>
+    </dialog>
+
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer>
+        <div class="logo"><span>N</span>EXO</div>
+        <p>Conectando pessoas e organizando momentos.</p>
+        <p>© 2026 NEXO. Projeto acadêmico SENAI.</p>
+    </footer>
+
+</body>
+</html>

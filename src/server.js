@@ -1,13 +1,53 @@
+import 'dotenv/config';
 import express from 'express';
-import ferramentasRouter from './routers/ferramentas.Routers.js';
+import { fileURLToPath } from 'node:url';
+import resenhasRouter from './routes/resenhas.routes.js';
+import { AppError } from './errors/AppError.js';
 
 const app = express();
-const port = 3000;
+const port = Number(process.env.PORT) || 3000;
+const pastaPublica = fileURLToPath(new URL('../public', import.meta.url));
 
-app.use(express.json());
+app.use(express.json({ limit: '20kb' }));
 
-app.use('/ferramentas', ferramentasRouter);
+// Front-end (index.html, style.css, app.js)
+app.use(express.static(pastaPublica));
+
+// API
+app.use('/api/resenhas', resenhasRouter);
+
+app.use('/api', (req, res) => {
+  res.status(404).json({ erro: 'Rota não encontrada.' });
+});
+
+// Tratamento central de erros
+// Códigos do PostgreSQL: 3D000 = banco não existe, 42P01 = tabela não existe, 28P01 = senha incorreta
+const ERROS_DE_BANCO = ['ECONNREFUSED', 'ENOTFOUND', '3D000', '42P01', '28P01'];
+
+app.use((erro, req, res, next) => {
+  if (erro instanceof AppError) {
+    return res.status(erro.status).json({ erro: erro.message, erros: erro.detalhes });
+  }
+
+  if (erro.type === 'entity.parse.failed') {
+    return res.status(400).json({ erro: 'JSON inválido no corpo da requisição.' });
+  }
+
+  if (erro.type === 'entity.too.large') {
+    return res.status(413).json({ erro: 'Dados enviados são grandes demais.' });
+  }
+
+  if (ERROS_DE_BANCO.includes(erro.code)) {
+    console.error(`Banco de dados indisponível (${erro.code}): ${erro.message}`);
+    return res.status(503).json({
+      erro: 'Banco de dados indisponível. Verifique o .env e rode "npm run db:init".',
+    });
+  }
+
+  console.error(erro);
+  res.status(500).json({ erro: 'Erro interno do servidor.' });
+});
 
 app.listen(port, () => {
-  console.log('app rodando em http://localhost:3000');
+  console.log(`NEXO rodando em http://localhost:${port}`);
 });

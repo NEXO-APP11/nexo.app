@@ -1,6 +1,18 @@
-{"scripts": {
-  "nexo": "node --watch/src/server.js"
-},
+{
+  "name": "nexo-app",
+  "version": "1.0.0",
+  "description": "NEXO — encontre e organize resenhas.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "db:init": "node src/database/init.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
   "dependencies": {
     "dotenv": "^18.0.8",
     "express": "^5.3.0",
