@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Área do organizador NEXO: acesse sua resenha com o código de organizador.">
+    <meta name="theme-color" content="#0f0f12">
+    <meta name="robots" content="noindex">
+
+    <title>NEXO | Área do organizador</title>
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%238b5cf6'/><text x='50' y='70' font-size='62' font-family='Arial' font-weight='bold' text-anchor='middle' fill='white'>N</text></svg>">
+    <link rel="stylesheet" href="style.css">
+    <script src="comum.js" defer></script>
+    <script src="organizador.js" defer></script>
+</head>
+
+<body>
+
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+    <!-- ================= HEADER ================= -->
+
+    <header class="header">
+
+        <a href="/" class="logo" aria-label="NEXO, voltar ao início">
+            <span>N</span>EXO
+        </a>
+
+        <nav class="menu" aria-label="Navegação principal">
+            <a href="/">Início</a>
+            <a href="/#resenhas">Resenhas</a>
+            <a href="organizador" aria-current="page">Sou organizador</a>
+        </nav>
+
+        <a href="/#criar" class="btn-primary">Criar resenha</a>
+
+    </header>
+
+
+    <main id="conteudo" class="org">
+
+        <!-- ================= PASSO 1: PEDIR O CÓDIGO ================= -->
+
+        <section class="org-acesso" id="tela-acesso">
+
+            <span class="tag">ÁREA DO ORGANIZADOR</span>
+            <h1>Gerencie sua resenha</h1>
+            <p class="org-texto">
+                Digite o código de 6 caracteres que apareceu quando você criou a resenha.
+            </p>
+
+            <form class="event-form" id="form-codigo" novalidate>
+                <div class="form-group">
+                    <label for="codigo">Código do organizador</label>
+                    <input id="codigo" name="codigo" class="codigo-input" type="text"
+                           maxlength="7" required autocomplete="off" autocapitalize="characters"
+                           spellcheck="false" placeholder="Ex: K7MP2Q">
+                </div>
+
+                <p class="form-message" id="mensagem-codigo" role="alert"></p>
+
+                <button type="submit" class="btn-primary full">Entrar</button>
+            </form>
+
+            <p class="org-ajuda">
+                Ainda não tem uma resenha? <a href="/#criar">Crie a sua agora</a>.
+            </p>
+
+        </section>
+
+
+        <!-- ================= PASSO 2: PAINEL DA RESENHA ================= -->
+
+        <section class="painel" id="tela-painel" hidden aria-labelledby="painel-titulo">
+
+            <div class="painel-topo" id="painel-imagem">
+                <span class="event-date" data-campo="data-curta"></span>
+                <span class="age" data-campo="idade"></span>
+            </div>
+
+            <div class="painel-corpo">
+
+                <div class="painel-cabecalho">
+                    <div>
+                        <span class="tag">SUA RESENHA</span>
+                        <h1 id="painel-titulo" data-campo="nome"></h1>
+                        <p class="painel-quando" data-campo="quando"></p>
+                    </div>
+                    <button type="button" class="btn-secondary" id="btn-sair">Sair</button>
+                </div>
+
+                <!-- Números da resenha -->
+                <div class="stats">
+                    <div class="stat">
+                        <span class="stat-numero" id="stat-confirmados"></span>
+                        <span class="stat-rotulo">confirmados</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-numero" id="stat-vagas"></span>
+                        <span class="stat-rotulo" id="stat-vagas-rotulo">vagas restantes</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-numero" id="stat-arrecadacao"></span>
+                        <span class="stat-rotulo">previsão de arrecadação</span>
+                    </div>
+                </div>
+
+                <div class="barra" id="barra" hidden>
+                    <div class="barra-preenchida" id="barra-preenchida"></div>
+                </div>
+
+                <ul class="modal-info">
+                    <li><span aria-hidden="true">📅</span> <span data-campo="data"></span></li>
+                    <li><span aria-hidden="true">🕐</span> <span data-campo="horario"></span></li>
+                    <li><span aria-hidden="true">📍</span> <span data-campo="endereco"></span></li>
+                    <li><span aria-hidden="true">💰</span> <span data-campo="pagamento"></span></li>
+                    <li data-se="bebidas_comidas"><span aria-hidden="true">🍕</span> <span data-campo="bebidas_comidas"></span></li>
+                </ul>
+
+                <p class="modal-descricao" data-campo="descricao"></p>
+
+                <p class="form-message" id="mensagem-painel" role="status"></p>
+
+                <div class="modal-actions painel-acoes">
+                    <a class="btn-secondary" id="link-publico" href="/">Ver página pública</a>
+                    <button type="button" class="btn-primary" id="btn-convite">Copiar link de convite</button>
+                </div>
+
+                <div class="zona-perigo">
+                    <div>
+                        <strong>Excluir resenha</strong>
+                        <p>Apaga a resenha para todo mundo. Não dá para desfazer.</p>
+                    </div>
+                    <button type="button" class="btn-perigo" id="btn-excluir">Excluir</button>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer>
+        <div class="logo"><span>N</span>EXO</div>
+        <p>Conectando pessoas e organizando momentos.</p>
+        <p>© 2026 NEXO. Projeto acadêmico SENAI.</p>
+    </footer>
+
+</body>
+</html>

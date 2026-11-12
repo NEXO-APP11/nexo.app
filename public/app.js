@@ -1,5 +1,4 @@
 const API = '/api/resenhas';
-const GRADIENTES = ['image-one', 'image-two', 'image-three'];
 const CHAVE_CONFIRMADAS = 'nexo:confirmadas';
 
 const listaEl = document.getElementById('lista-resenhas');
@@ -14,84 +13,6 @@ const btnPresenca = document.getElementById('btn-presenca');
 
 let resenhaAberta = null;
 
-/* ================= UTILITÁRIOS ================= */
-
-async function requisitar(url, opcoes = {}) {
-  const resposta = await fetch(url, {
-    headers: { 'Content-Type': 'application/json' },
-    ...opcoes,
-  });
-  const corpo = resposta.status === 204 ? null : await resposta.json().catch(() => null);
-  if (!resposta.ok) {
-    throw new Error(corpo?.erro || 'Não foi possível completar a ação. Tente novamente.');
-  }
-  return corpo;
-}
-
-function paraData(iso) {
-  const [ano, mes, dia] = iso.split('-').map(Number);
-  return new Date(ano, mes - 1, dia);
-}
-
-function hojeISO() {
-  const hoje = new Date();
-  hoje.setMinutes(hoje.getMinutes() - hoje.getTimezoneOffset());
-  return hoje.toISOString().slice(0, 10);
-}
-
-const formatar = {
-  dataCurta: (iso) =>
-    paraData(iso)
-      .toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
-      .replace('.', '')
-      .replace(' de ', ' ')
-      .toUpperCase(),
-  dataLonga: (iso) =>
-    paraData(iso).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }),
-  diaSemana: (iso) => {
-    const dia = paraData(iso).toLocaleDateString('pt-BR', { weekday: 'long' }).split('-')[0];
-    return dia.charAt(0).toUpperCase() + dia.slice(1);
-  },
-  quando: (iso) => {
-    const dias = Math.round((paraData(iso) - paraData(hojeISO())) / 86_400_000);
-    if (dias <= 0) return 'Hoje';
-    if (dias === 1) return 'Amanhã';
-    return `Em ${dias} dias`;
-  },
-  idade: (idade) => (idade > 0 ? `${idade}+` : 'Livre'),
-  presentes: (r) =>
-    r.limite_pessoas
-      ? `${r.confirmados}/${r.limite_pessoas} presentes`
-      : `${r.confirmados} ${r.confirmados === 1 ? 'presente' : 'presentes'}`,
-};
-
-// Preenche elementos [data-campo] usando textContent (evita injeção de HTML)
-function preencher(raiz, resenha) {
-  const valores = {
-    nome: resenha.nome,
-    local: resenha.local,
-    horario: resenha.horario,
-    data: formatar.dataLonga(resenha.data),
-    'data-curta': formatar.dataCurta(resenha.data),
-    idade: formatar.idade(resenha.idade_minima),
-    presentes: formatar.presentes(resenha),
-    confirmados: `${resenha.confirmados} ${resenha.confirmados === 1 ? 'pessoa' : 'pessoas'}`,
-    quando: formatar.quando(resenha.data),
-    bebidas_comidas: resenha.bebidas_comidas ?? '',
-    descricao: resenha.descricao ?? '',
-  };
-
-  raiz.querySelectorAll('[data-campo]').forEach((el) => {
-    el.textContent = valores[el.dataset.campo] ?? '';
-  });
-  raiz.querySelectorAll('[data-se]').forEach((el) => {
-    el.hidden = !resenha[el.dataset.se];
-  });
-}
-
-function gradiente(resenha) {
-  return GRADIENTES[resenha.id % GRADIENTES.length];
-}
 
 function lerConfirmadas() {
   try {
@@ -164,6 +85,7 @@ function abrirDetalhes(resenha) {
   atualizarBotaoPresenca();
   mensagemModal.textContent = '';
   mensagemModal.className = 'form-message';
+  document.getElementById('codigo-box').hidden = true;
 
   const url = new URL(location.href);
   url.searchParams.set('resenha', resenha.id);
@@ -243,6 +165,56 @@ async function abrirResenhaDoLink() {
 
 form.elements.data.min = hojeISO();
 
+// Campo "Valor" só aparece (e é obrigatório) quando a resenha não é gratuita
+const grupoValor = document.getElementById('grupo-valor');
+function atualizarCampoValor() {
+  const paga = form.elements.pagamento.value !== 'gratuito';
+  grupoValor.hidden = !paga;
+  form.elements.valor.required = paga;
+  form.elements.valor.disabled = !paga; // desabilitado = não vai no envio
+}
+form.elements.pagamento.addEventListener('change', atualizarCampoValor);
+form.addEventListener('reset', () => setTimeout(atualizarCampoValor));
+atualizarCampoValor();
+
+// Balão de cidade/estado: ao escolher o estado, sugere as cidades dele (dados do IBGE).
+// Se a internet/IBGE falhar, a pessoa ainda pode digitar a cidade normalmente.
+const campoEstado = form.elements.estado;
+const campoCidade = form.elements.cidade;
+const listaCidades = document.getElementById('lista-cidades');
+const cacheCidades = {};
+
+async function carregarCidades(uf) {
+  if (!cacheCidades[uf]) {
+    const url = `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`;
+    cacheCidades[uf] = fetch(url)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((cidades) => cidades.map((c) => c.nome))
+      .catch(() => {
+        delete cacheCidades[uf];
+        return [];
+      });
+  }
+  return cacheCidades[uf];
+}
+
+campoEstado.addEventListener('change', async () => {
+  const uf = campoEstado.value;
+  campoCidade.value = '';
+  listaCidades.replaceChildren();
+  campoCidade.disabled = !uf;
+  campoCidade.placeholder = uf ? 'Digite a cidade' : 'Escolha o estado primeiro';
+  if (!uf) return;
+
+  const cidades = await carregarCidades(uf);
+  if (campoEstado.value !== uf) return; // trocou de estado enquanto carregava
+  listaCidades.replaceChildren(...cidades.map((nome) => new Option(nome)));
+});
+
+form.addEventListener('reset', () =>
+  setTimeout(() => campoEstado.dispatchEvent(new Event('change')))
+);
+
 form.addEventListener('submit', async (evento) => {
   evento.preventDefault();
   mensagemForm.className = 'form-message';
@@ -270,6 +242,7 @@ form.addEventListener('submit', async (evento) => {
 
     await carregarResenhas();
     abrirDetalhes(criada);
+    mostrarCodigoOrganizador(criada.codigo_organizador);
   } catch (erro) {
     mensagemForm.textContent = erro.message;
     mensagemForm.classList.add('erro');
@@ -283,3 +256,23 @@ form.addEventListener('submit', async (evento) => {
 
 carregarResenhas();
 abrirResenhaDoLink();
+
+/* ================= CÓDIGO DO ORGANIZADOR ================= */
+
+function mostrarCodigoOrganizador(codigo) {
+  if (!codigo) return;
+  document.getElementById('codigo-valor').textContent = codigo;
+  document.getElementById('codigo-box').hidden = false;
+  document.getElementById('btn-copiar-codigo').textContent = 'Copiar código';
+}
+
+const btnCopiarCodigo = document.getElementById('btn-copiar-codigo');
+btnCopiarCodigo.addEventListener('click', async () => {
+  const codigo = document.getElementById('codigo-valor').textContent;
+  try {
+    await navigator.clipboard.writeText(codigo);
+    btnCopiarCodigo.textContent = 'Código copiado ✓';
+  } catch {
+    btnCopiarCodigo.textContent = 'Anote o código acima';
+  }
+});

@@ -1,6 +1,6 @@
 // CAMADA 2 — Controller: lê a requisição, chama o service e monta a resposta HTTP.
 // O Express 5 encaminha automaticamente erros de funções async para o middleware de erro.
-import resenhasService from '../services/resenhas.service.js';
+import {resenhasService}from '../services/resenhas.service.js';
 import { validarId } from '../validation/resenha.validation.js';
 import { AppError } from '../errors/AppError.js';
 
@@ -29,11 +29,7 @@ class ResenhasController {
   async confirmarPresenca(req, res) {
     res.json(await resenhasService.confirmarPresenca(req.resenhaId));
   }
-
-  async remover(req, res) {
-    await resenhasService.remover(req.resenhaId);
-    res.status(204).end();
-  }
 }
 
-export default new ResenhasController();
+export const controller = new ResenhasController();
+export default controller;

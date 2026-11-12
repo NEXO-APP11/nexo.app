@@ -6,7 +6,7 @@ const CAMPOS = `
   id, nome,
   to_char(data, 'YYYY-MM-DD') AS data,
   to_char(horario, 'HH24:MI') AS horario,
-  local, idade_minima, limite_pessoas, bebidas_comidas, descricao, confirmados
+  local, cidade, estado, pagamento, valor::float8 AS valor, idade_minima, limite_pessoas, bebidas_comidas, descricao, confirmados
 `;
 
 class ResenhasRepository {
@@ -24,13 +24,13 @@ class ResenhasRepository {
     return rows[0] ?? null;
   }
 
-  async inserir({ nome, data, horario, local, idade_minima, limite_pessoas, bebidas_comidas, descricao }) {
+  async inserir({ codigo_organizador, nome, data, horario, local, cidade, estado, pagamento, valor, idade_minima, limite_pessoas, bebidas_comidas, descricao }) {
     const { rows } = await pool.query(
       `INSERT INTO resenhas
-         (nome, data, horario, local, idade_minima, limite_pessoas, bebidas_comidas, descricao)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       RETURNING ${CAMPOS}`,
-      [nome, data, horario, local, idade_minima, limite_pessoas, bebidas_comidas, descricao]
+         (codigo_organizador, nome, data, horario, local, cidade, estado, pagamento, valor, idade_minima, limite_pessoas, bebidas_comidas, descricao)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+       RETURNING ${CAMPOS}, codigo_organizador`,
+      [codigo_organizador, nome, data, horario, local, cidade, estado, pagamento, valor, idade_minima, limite_pessoas, bebidas_comidas, descricao]
     );
     return rows[0];
   }
@@ -47,10 +47,20 @@ class ResenhasRepository {
     return rows[0] ?? null;
   }
 
-  async remover(id) {
-    const { rowCount } = await pool.query('DELETE FROM resenhas WHERE id = $1', [id]);
+  // O código do organizador nunca sai nas consultas públicas, só nestas duas.
+  async buscarPorCodigo(codigo) {
+    const { rows } = await pool.query(
+      `SELECT ${CAMPOS}, codigo_organizador FROM resenhas WHERE codigo_organizador = $1`,
+      [codigo]
+    );
+    return rows[0] ?? null;
+  }
+
+  async removerPorCodigo(codigo) {
+    const { rowCount } = await pool.query('DELETE FROM resenhas WHERE codigo_organizador = $1', [codigo]);
     return rowCount > 0;
   }
 }
 
-export default new ResenhasRepository();
+export const resenhasRepository = new ResenhasRepository();
+export default resenhasRepository;

@@ -10,6 +10,7 @@
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%238b5cf6'/><text x='50' y='70' font-size='62' font-family='Arial' font-weight='bold' text-anchor='middle' fill='white'>N</text></svg>">
     <link rel="stylesheet" href="style.css">
+    <script src="comum.js" defer></script>
     <script src="app.js" defer></script>
 </head>
 
@@ -29,6 +30,7 @@
             <a href="#inicio">Início</a>
             <a href="#como-funciona">Como funciona</a>
             <a href="#resenhas">Resenhas</a>
+            <a href="organizador">Sou organizador</a>
         </nav>
 
         <a href="#criar" class="btn-primary">Criar resenha</a>
@@ -78,7 +80,10 @@
                 <h3 data-campo="nome"></h3>
 
                 <p class="location">
-                    <span aria-hidden="true">📍</span> <span data-campo="local"></span>
+                    <span aria-hidden="true">📍</span> <span data-campo="endereco"></span>
+                </p>
+                <p class="location">
+                    <span aria-hidden="true">💰</span> <span data-campo="pagamento"></span>
                 </p>
 
                 <dl class="event-info">
@@ -183,8 +188,9 @@
 
                     <div class="event-content">
                         <h3 data-campo="nome"></h3>
-                        <p><span aria-hidden="true">📍</span> <span data-campo="local"></span></p>
+                        <p><span aria-hidden="true">📍</span> <span data-campo="endereco"></span></p>
                         <p><span aria-hidden="true">🕐</span> <span data-campo="horario"></span></p>
+                        <p><span aria-hidden="true">💰</span> <span data-campo="pagamento"></span></p>
 
                         <div class="event-footer">
                             <span><span aria-hidden="true">👥</span> <span data-campo="presentes"></span></span>
@@ -236,6 +242,60 @@
                     <label for="local">Local</label>
                     <input id="local" name="local" type="text" maxlength="150" required
                            placeholder="Ex: Chácara do João">
+                </div>
+
+                <!-- Balão: cidade e estado -->
+                <fieldset class="balao-local">
+                    <legend><span aria-hidden="true">📍</span> Onde fica?</legend>
+
+                    <div class="form-row form-row-estado">
+                        <div class="form-group">
+                            <label for="estado">Estado</label>
+                            <select id="estado" name="estado" required>
+                                <option value="">UF</option>
+                                <option value="AC">AC</option><option value="AL">AL</option>
+                                <option value="AP">AP</option><option value="AM">AM</option>
+                                <option value="BA">BA</option><option value="CE">CE</option>
+                                <option value="DF">DF</option><option value="ES">ES</option>
+                                <option value="GO">GO</option><option value="MA">MA</option>
+                                <option value="MT">MT</option><option value="MS">MS</option>
+                                <option value="MG">MG</option><option value="PA">PA</option>
+                                <option value="PB">PB</option><option value="PR">PR</option>
+                                <option value="PE">PE</option><option value="PI">PI</option>
+                                <option value="RJ">RJ</option><option value="RN">RN</option>
+                                <option value="RS">RS</option><option value="RO">RO</option>
+                                <option value="RR">RR</option><option value="SC">SC</option>
+                                <option value="SP">SP</option><option value="SE">SE</option>
+                                <option value="TO">TO</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cidade">Cidade</label>
+                            <input id="cidade" name="cidade" type="text" maxlength="100" required
+                                   list="lista-cidades" autocomplete="off"
+                                   placeholder="Escolha o estado primeiro" disabled>
+                            <datalist id="lista-cidades"></datalist>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pagamento">Pagamento</label>
+                        <select id="pagamento" name="pagamento">
+                            <option value="gratuito">Gratuita</option>
+                            <option value="pix">Pix</option>
+                            <option value="dinheiro">Dinheiro</option>
+                            <option value="cartao">Cartão</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="grupo-valor" hidden>
+                        <label for="valor">Valor (R$)</label>
+                        <input id="valor" name="valor" type="number" min="0.01" max="100000" step="0.01"
+                               inputmode="decimal" placeholder="Ex: 20,00">
+                    </div>
                 </div>
 
                 <div class="form-row">
@@ -292,10 +352,22 @@
         <div class="modal-body">
             <h2 id="modal-titulo" data-campo="nome"></h2>
 
+            <!-- Só aparece logo depois de criar a resenha -->
+            <div class="codigo-box" id="codigo-box" hidden>
+                <p class="codigo-titulo">🔑 Seu código de organizador</p>
+                <p class="codigo-valor" id="codigo-valor"></p>
+                <p class="codigo-dica">
+                    Guarde este código! Ele é a única forma de acessar a
+                    <a href="organizador">Área do organizador</a> e gerenciar sua resenha.
+                </p>
+                <button type="button" class="btn-secondary" id="btn-copiar-codigo">Copiar código</button>
+            </div>
+
             <ul class="modal-info">
                 <li><span aria-hidden="true">📅</span> <span data-campo="data"></span></li>
                 <li><span aria-hidden="true">🕐</span> <span data-campo="horario"></span></li>
-                <li><span aria-hidden="true">📍</span> <span data-campo="local"></span></li>
+                <li><span aria-hidden="true">📍</span> <span data-campo="endereco"></span></li>
+                <li><span aria-hidden="true">💰</span> <span data-campo="pagamento"></span></li>
                 <li><span aria-hidden="true">👥</span> <span data-campo="presentes"></span></li>
                 <li data-se="bebidas_comidas"><span aria-hidden="true">🍕</span> <span data-campo="bebidas_comidas"></span></li>
             </ul>

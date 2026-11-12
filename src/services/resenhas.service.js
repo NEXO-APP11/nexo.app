@@ -1,7 +1,18 @@
 // CAMADA 3 — Service: regras de negócio. Não conhece Express nem SQL.
-import resenhasRepository from '../repositories/resenhas.repository.js';
-import { validarResenha } from '../validation/resenha.validation.js';
+import { randomInt } from 'node:crypto';
+import {resenhasRepository} from '../repositories/resenhas.repository.js';
+import { validarResenha, validarCodigo } from '../validation/resenha.validation.js';
 import { AppError } from '../errors/AppError.js';
+
+// Sem letras/números parecidos (0/O, 1/I/L) para o código ser fácil de digitar
+const ALFABETO_CODIGO = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const ERRO_UNICO_POSTGRES = '23505';
+
+function gerarCodigoOrganizador() {
+  let codigo = '';
+  for (let i = 0; i < 6; i++) codigo += ALFABETO_CODIGO[randomInt(ALFABETO_CODIGO.length)];
+  return codigo;
+}
 
 class ResenhasService {
   listarProximas() {
@@ -14,10 +25,20 @@ class ResenhasService {
     return resenha;
   }
 
+  // Cria a resenha e devolve junto o código do organizador (só aparece nesta resposta).
   async criar(corpo) {
     const { dados, erros } = validarResenha(corpo);
     if (erros) throw new AppError(erros[0], 400, erros);
-    return resenhasRepository.inserir(dados);
+
+    // Se o código sorteado já existir (muito raro), tenta outro
+    for (let tentativa = 0; tentativa < 5; tentativa++) {
+      try {
+        return await resenhasRepository.inserir({ ...dados, codigo_organizador: gerarCodigoOrganizador() });
+      } catch (erro) {
+        if (erro.code !== ERRO_UNICO_POSTGRES) throw erro;
+      }
+    }
+    throw new AppError('Não foi possível gerar o código do organizador. Tente novamente.', 500);
   }
 
   async confirmarPresenca(id) {
@@ -29,10 +50,25 @@ class ResenhasService {
     throw new AppError('Essa resenha já está lotada.', 409);
   }
 
-  async remover(id) {
-    const removida = await resenhasRepository.remover(id);
-    if (!removida) throw new AppError('Resenha não encontrada.', 404);
+  /* ---------- Área do organizador (acesso pelo código) ---------- */
+
+  async buscarPorCodigo(codigoInformado) {
+    const codigo = validarCodigo(codigoInformado);
+    if (!codigo) throw new AppError('O código deve ter 6 letras/números.', 400);
+
+    const resenha = await resenhasRepository.buscarPorCodigo(codigo);
+    if (!resenha) throw new AppError('Código não encontrado. Confira e tente de novo.', 404);
+    return resenha;
+  }
+
+  async removerPorCodigo(codigoInformado) {
+    const codigo = validarCodigo(codigoInformado);
+    if (!codigo) throw new AppError('O código deve ter 6 letras/números.', 400);
+
+    const removida = await resenhasRepository.removerPorCodigo(codigo);
+    if (!removida) throw new AppError('Código não encontrado. Confira e tente de novo.', 404);
   }
 }
 
-export default new ResenhasService();
+export const resenhasService = new ResenhasService();
+export default resenhasService;

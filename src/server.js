@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import { fileURLToPath } from 'node:url';
 import resenhasRouter from './routes/resenhas.routes.js';
+import organizadorRouter from './routes/organizador.routes.js';
 import { AppError } from './errors/AppError.js';
 
 const app = express();
@@ -11,10 +12,12 @@ const pastaPublica = fileURLToPath(new URL('../public', import.meta.url));
 app.use(express.json({ limit: '20kb' }));
 
 // Front-end (index.html, style.css, app.js)
-app.use(express.static(pastaPublica));
+// extensions: permite abrir /organizador em vez de /organizador.html
+app.use(express.static(pastaPublica, { extensions: ['html'] }));
 
 // API
 app.use('/api/resenhas', resenhasRouter);
+app.use('/api/organizador', organizadorRouter);
 
 app.use('/api', (req, res) => {
   res.status(404).json({ erro: 'Rota não encontrada.' });
