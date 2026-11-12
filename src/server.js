@@ -72,3 +72,14 @@ app.use((erro, req, res, next) => {
 app.listen(port, () => {
   console.log(`NEXO rodando em http://localhost:${port}`);
 });
+
+async function shutdown(signal) {
+  console.log(`Recebido ${signal}; encerrando servidor.`);
+  server.close(async () => {
+    await pool.end();
+    process.exit(0);
+  });
+}
+
+process.once('SIGINT', () => shutdown('SIGINT'));
+process.once('SIGTERM', () => shutdown('SIGTERM'));
