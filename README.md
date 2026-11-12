@@ -73,9 +73,10 @@ Fluxo de uma requisição: `routes → controllers → services → repositories
 | ------ | ----------------------------- | ---------------------------------- |
 | GET    | `/api/resenhas`               | Lista as próximas resenhas         |
 | GET    | `/api/resenhas/:id`           | Detalhes de uma resenha            |
-| POST   | `/api/resenhas`               | Cria uma resenha                   |
+| POST   | `/api/resenhas`               | Cria uma resenha e devolve o `codigo_organizador` |
 | POST   | `/api/resenhas/:id/presenca`  | Confirma presença (respeita limite)|
-| DELETE | `/api/resenhas/:id`           | Remove uma resenha                 |
+| POST   | `/api/organizador/entrar`     | `{ codigo }` → dados da resenha (área do organizador) |
+| POST   | `/api/organizador/excluir`    | `{ codigo }` → apaga a resenha     |
 
 Exemplo de corpo para criar uma resenha:
 

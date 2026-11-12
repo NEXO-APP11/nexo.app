@@ -127,6 +127,23 @@ textarea {
     color: var(--texto);
 }
 
+.header-acoes {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.link-conta {
+    color: var(--texto-suave);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 0.2s;
+}
+
+.link-conta:hover {
+    color: var(--texto);
+}
+
 /* ================= BOTÕES ================= */
 
 button {
@@ -395,7 +412,8 @@ button:disabled {
 }
 
 .event-image,
-.modal-image {
+.modal-image,
+.painel-topo {
     height: 200px;
     padding: 15px;
     display: flex;
@@ -547,6 +565,33 @@ button:disabled {
     gap: 15px;
 }
 
+/* Balão de cidade e estado */
+.balao-local {
+    position: relative;
+    margin: 4px 0 24px;
+    padding: 18px 16px 0;
+    border: 1px solid rgba(139, 92, 246, 0.45);
+    border-radius: var(--raio);
+    background: rgba(139, 92, 246, 0.08);
+}
+
+.balao-local legend {
+    padding: 0 8px;
+    margin-left: -8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--roxo-claro);
+}
+
+.form-row-estado {
+    grid-template-columns: 110px 1fr;
+}
+
+.form-group input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .form-message {
     font-size: 14px;
     margin-bottom: 14px;
@@ -654,6 +699,215 @@ button:disabled {
     background: rgba(0, 0, 0, 0.75);
 }
 
+/* ================= CÓDIGO DO ORGANIZADOR (no modal) ================= */
+
+.codigo-box {
+    margin-bottom: 20px;
+    padding: 18px;
+    border: 1px dashed var(--roxo-claro);
+    border-radius: 12px;
+    background: rgba(139, 92, 246, 0.1);
+    text-align: center;
+}
+
+.codigo-titulo {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--roxo-claro);
+}
+
+.codigo-valor {
+    margin: 8px 0;
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: 6px;
+    color: var(--texto);
+}
+
+.codigo-dica {
+    margin-bottom: 14px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--texto-suave);
+}
+
+.codigo-dica a {
+    color: var(--roxo-claro);
+}
+
+/* ================= ÁREA DO ORGANIZADOR ================= */
+
+.org {
+    min-height: calc(100dvh - 80px - 160px);
+    padding: 70px var(--gutter);
+    color: var(--texto);
+}
+
+.org-acesso {
+    max-width: 440px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.org-acesso h1 {
+    font-size: 40px;
+    margin: 12px 0;
+}
+
+.org-texto {
+    color: var(--texto-mudo);
+    line-height: 1.6;
+    margin-bottom: 28px;
+}
+
+.org-acesso .event-form {
+    text-align: left;
+}
+
+.codigo-input {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 26px !important;
+    font-weight: 700;
+    letter-spacing: 8px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.codigo-input::placeholder {
+    letter-spacing: 2px;
+    font-size: 18px;
+    font-weight: 400;
+}
+
+.org-ajuda {
+    margin-top: 20px;
+    font-size: 14px;
+    color: var(--texto-mudo);
+}
+
+.org-ajuda a {
+    color: var(--roxo-claro);
+}
+
+.painel {
+    max-width: 760px;
+    margin: 0 auto;
+    background: var(--superficie);
+    border: 1px solid var(--borda);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.painel-topo {
+    height: 140px;
+}
+
+.painel-corpo {
+    padding: 28px;
+}
+
+.painel-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.painel-cabecalho h1 {
+    font-size: 32px;
+    margin: 8px 0 4px;
+    overflow-wrap: anywhere;
+}
+
+.painel-quando {
+    color: var(--roxo-claro);
+    font-weight: 600;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px;
+    border-radius: 12px;
+    background: var(--superficie-2);
+}
+
+.stat-numero {
+    font-size: 26px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-rotulo {
+    font-size: 13px;
+    color: var(--texto-mudo);
+}
+
+.barra {
+    height: 8px;
+    margin-bottom: 24px;
+    border-radius: 99px;
+    background: var(--superficie-2);
+    overflow: hidden;
+}
+
+.barra-preenchida {
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--roxo), var(--roxo-claro));
+    transition: width 0.4s ease-out;
+}
+
+.painel-acoes {
+    margin-bottom: 28px;
+}
+
+.zona-perigo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 18px;
+    border: 1px solid rgba(248, 113, 113, 0.35);
+    border-radius: 12px;
+}
+
+.zona-perigo p {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--texto-mudo);
+}
+
+.btn-perigo {
+    flex-shrink: 0;
+    padding: 11px 20px;
+    border-radius: 10px;
+    border: 1px solid var(--erro);
+    background: transparent;
+    color: var(--erro);
+    font-weight: bold;
+    transition: background 0.2s, color 0.2s;
+}
+
+.btn-perigo:hover:not(:disabled) {
+    background: var(--erro);
+    color: #1b0b0b;
+}
+
+.menu a[aria-current="page"] {
+    color: var(--texto);
+}
+
 /* ================= FOOTER ================= */
 
 footer {
@@ -746,6 +1000,28 @@ footer p {
     .form-row {
         grid-template-columns: 1fr;
         gap: 0;
+    }
+
+    .org {
+        padding-top: 40px;
+        padding-bottom: 40px;
+    }
+
+    .org-acesso h1 {
+        font-size: 32px;
+    }
+
+    .painel-corpo {
+        padding: 20px;
+    }
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+
+    .zona-perigo {
+        flex-direction: column;
+        align-items: stretch;
     }
 }
 

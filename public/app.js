@@ -1,6 +1,4 @@
 const API = '/api/resenhas';
-const GRADIENTES = ['image-one', 'image-two', 'image-three'];
-const CHAVE_CONFIRMADAS = 'nexo:confirmadas';
 
 const listaEl = document.getElementById('lista-resenhas');
 const statusEl = document.getElementById('status-resenhas');
@@ -13,103 +11,6 @@ const mensagemModal = document.getElementById('mensagem-modal');
 const btnPresenca = document.getElementById('btn-presenca');
 
 let resenhaAberta = null;
-
-/* ================= UTILITÁRIOS ================= */
-
-async function requisitar(url, opcoes = {}) {
-  const resposta = await fetch(url, {
-    headers: { 'Content-Type': 'application/json' },
-    ...opcoes,
-  });
-  const corpo = resposta.status === 204 ? null : await resposta.json().catch(() => null);
-  if (!resposta.ok) {
-    throw new Error(corpo?.erro || 'Não foi possível completar a ação. Tente novamente.');
-  }
-  return corpo;
-}
-
-function paraData(iso) {
-  const [ano, mes, dia] = iso.split('-').map(Number);
-  return new Date(ano, mes - 1, dia);
-}
-
-function hojeISO() {
-  const hoje = new Date();
-  hoje.setMinutes(hoje.getMinutes() - hoje.getTimezoneOffset());
-  return hoje.toISOString().slice(0, 10);
-}
-
-const formatar = {
-  dataCurta: (iso) =>
-    paraData(iso)
-      .toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
-      .replace('.', '')
-      .replace(' de ', ' ')
-      .toUpperCase(),
-  dataLonga: (iso) =>
-    paraData(iso).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }),
-  diaSemana: (iso) => {
-    const dia = paraData(iso).toLocaleDateString('pt-BR', { weekday: 'long' }).split('-')[0];
-    return dia.charAt(0).toUpperCase() + dia.slice(1);
-  },
-  quando: (iso) => {
-    const dias = Math.round((paraData(iso) - paraData(hojeISO())) / 86_400_000);
-    if (dias <= 0) return 'Hoje';
-    if (dias === 1) return 'Amanhã';
-    return `Em ${dias} dias`;
-  },
-  idade: (idade) => (idade > 0 ? `${idade}+` : 'Livre'),
-  presentes: (r) =>
-    r.limite_pessoas
-      ? `${r.confirmados}/${r.limite_pessoas} presentes`
-      : `${r.confirmados} ${r.confirmados === 1 ? 'presente' : 'presentes'}`,
-};
-
-// Preenche elementos [data-campo] usando textContent (evita injeção de HTML)
-function preencher(raiz, resenha) {
-  const valores = {
-    nome: resenha.nome,
-    local: resenha.local,
-    horario: resenha.horario,
-    data: formatar.dataLonga(resenha.data),
-    'data-curta': formatar.dataCurta(resenha.data),
-    idade: formatar.idade(resenha.idade_minima),
-    presentes: formatar.presentes(resenha),
-    confirmados: `${resenha.confirmados} ${resenha.confirmados === 1 ? 'pessoa' : 'pessoas'}`,
-    quando: formatar.quando(resenha.data),
-    bebidas_comidas: resenha.bebidas_comidas ?? '',
-    descricao: resenha.descricao ?? '',
-  };
-
-  raiz.querySelectorAll('[data-campo]').forEach((el) => {
-    el.textContent = valores[el.dataset.campo] ?? '';
-  });
-  raiz.querySelectorAll('[data-se]').forEach((el) => {
-    el.hidden = !resenha[el.dataset.se];
-  });
-}
-
-function gradiente(resenha) {
-  return GRADIENTES[resenha.id % GRADIENTES.length];
-}
-
-function lerConfirmadas() {
-  try {
-    return new Set(JSON.parse(localStorage.getItem(CHAVE_CONFIRMADAS)) ?? []);
-  } catch {
-    return new Set();
-  }
-}
-
-function salvarConfirmada(id) {
-  try {
-    const ids = lerConfirmadas();
-    ids.add(id);
-    localStorage.setItem(CHAVE_CONFIRMADAS, JSON.stringify([...ids]));
-  } catch {
-    /* navegador sem armazenamento: ignora */
-  }
-}
 
 /* ================= LISTAGEM ================= */
 
@@ -164,6 +65,7 @@ function abrirDetalhes(resenha) {
   atualizarBotaoPresenca();
   mensagemModal.textContent = '';
   mensagemModal.className = 'form-message';
+  document.getElementById('codigo-box').hidden = true;
 
   const url = new URL(location.href);
   url.searchParams.set('resenha', resenha.id);
@@ -174,11 +76,18 @@ function abrirDetalhes(resenha) {
 
 function atualizarBotaoPresenca() {
   const r = resenhaAberta;
-  const jaConfirmou = lerConfirmadas().has(r.id);
-  const lotada = r.limite_pessoas && r.confirmados >= r.limite_pessoas;
+  const logado = Boolean(sessaoAtual.usuario);
+  const jaConfirmou = sessaoAtual.presencas.includes(r.id);
+  const lotada = Boolean(r.limite_pessoas) && r.confirmados >= r.limite_pessoas;
 
-  btnPresenca.disabled = jaConfirmou || lotada;
-  btnPresenca.textContent = jaConfirmou ? 'Presença confirmada ✓' : lotada ? 'Lotada' : 'Confirmar presença';
+  btnPresenca.disabled = jaConfirmou || (lotada && logado);
+  btnPresenca.textContent = !logado
+    ? 'Entrar para confirmar'
+    : jaConfirmou
+      ? 'Presença confirmada ✓'
+      : lotada
+        ? 'Lotada'
+        : 'Confirmar presença';
 }
 
 function fecharDetalhes() {
@@ -201,11 +110,17 @@ document.getElementById('btn-fechar').addEventListener('click', fecharDetalhes);
 
 btnPresenca.addEventListener('click', async () => {
   const id = resenhaAberta.id;
-  btnPresenca.disabled = true;
 
+  // Sem login: manda para a página de conta e volta para esta resenha depois
+  if (!sessaoAtual.usuario) {
+    location.href = `conta?voltar=${encodeURIComponent(`/?resenha=${id}`)}`;
+    return;
+  }
+
+  btnPresenca.disabled = true;
   try {
     const atualizada = await requisitar(`${API}/${id}/presenca`, { method: 'POST' });
-    salvarConfirmada(id);
+    sessaoAtual.presencas.push(id);
     abrirDetalhes(atualizada);
     mensagemModal.textContent = 'Presença confirmada! Nos vemos lá 🎉';
     mensagemModal.className = 'form-message sucesso';
@@ -243,18 +158,14 @@ async function abrirResenhaDoLink() {
 
 form.elements.data.min = hojeISO();
 
+ligarCampoValor(form, document.getElementById('grupo-valor'));
+ligarCamposLocal(form, document.getElementById('lista-cidades'));
+
 form.addEventListener('submit', async (evento) => {
   evento.preventDefault();
   mensagemForm.className = 'form-message';
 
-  if (!form.checkValidity()) {
-    const invalido = form.querySelector(':invalid');
-    const rotulo = form.querySelector(`label[for="${invalido.id}"]`)?.firstChild.textContent.trim();
-    mensagemForm.textContent = `Confira o campo "${rotulo}": ${invalido.validationMessage}`;
-    mensagemForm.classList.add('erro');
-    invalido.focus();
-    return;
-  }
+  if (!validarNoNavegador(form, mensagemForm)) return;
 
   const botao = form.querySelector('[type="submit"]');
   botao.disabled = true;
@@ -270,6 +181,7 @@ form.addEventListener('submit', async (evento) => {
 
     await carregarResenhas();
     abrirDetalhes(criada);
+    mostrarCodigoOrganizador(criada.codigo_organizador);
   } catch (erro) {
     mensagemForm.textContent = erro.message;
     mensagemForm.classList.add('erro');
@@ -281,5 +193,28 @@ form.addEventListener('submit', async (evento) => {
 
 /* ================= INÍCIO ================= */
 
-carregarResenhas();
-abrirResenhaDoLink();
+// Carrega a sessão primeiro para o botão de presença já saber se a pessoa está logada
+carregarSessao().finally(() => {
+  carregarResenhas();
+  abrirResenhaDoLink();
+});
+
+/* ================= CÓDIGO DO ORGANIZADOR ================= */
+
+function mostrarCodigoOrganizador(codigo) {
+  if (!codigo) return;
+  document.getElementById('codigo-valor').textContent = codigo;
+  document.getElementById('codigo-box').hidden = false;
+  document.getElementById('btn-copiar-codigo').textContent = 'Copiar código';
+}
+
+const btnCopiarCodigo = document.getElementById('btn-copiar-codigo');
+btnCopiarCodigo.addEventListener('click', async () => {
+  const codigo = document.getElementById('codigo-valor').textContent;
+  try {
+    await navigator.clipboard.writeText(codigo);
+    btnCopiarCodigo.textContent = 'Código copiado ✓';
+  } catch {
+    btnCopiarCodigo.textContent = 'Anote o código acima';
+  }
+});

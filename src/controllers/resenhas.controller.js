@@ -27,13 +27,9 @@ class ResenhasController {
   }
 
   async confirmarPresenca(req, res) {
-    res.json(await resenhasService.confirmarPresenca(req.resenhaId));
-  }
-
-  async remover(req, res) {
-    await resenhasService.remover(req.resenhaId);
-    res.status(204).end();
+    res.json(await resenhasService.confirmarPresenca(req.resenhaId, req.usuario));
   }
 }
 
-export default new ResenhasController();
+export const controller = new ResenhasController();
+export default controller;

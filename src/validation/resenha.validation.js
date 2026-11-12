@@ -1,4 +1,9 @@
 const IDADES_PERMITIDAS = [0, 16, 18, 21];
+const ESTADOS = [
+  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA',
+  'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
+];
+const FORMAS_PAGAMENTO = ['gratuito', 'pix', 'dinheiro', 'cartao'];
 
 function textoOpcional(valor) {
   if (valor === undefined || valor === null) return null;
@@ -31,6 +36,8 @@ export function validarResenha(corpo = {}) {
   const data = textoOpcional(corpo.data);
   const horario = textoOpcional(corpo.horario);
   const local = textoOpcional(corpo.local);
+  const cidade = textoOpcional(corpo.cidade);
+  const estado = textoOpcional(corpo.estado)?.toUpperCase() ?? null;
   const bebidas_comidas = textoOpcional(corpo.bebidas_comidas);
   const descricao = textoOpcional(corpo.descricao);
 
@@ -44,6 +51,26 @@ export function validarResenha(corpo = {}) {
 
   if (!local) erros.push('Informe o local.');
   else if (local.length > 150) erros.push('O local deve ter no máximo 150 caracteres.');
+
+  if (!cidade) erros.push('Informe a cidade.');
+  else if (cidade.length > 100) erros.push('A cidade deve ter no máximo 100 caracteres.');
+
+  if (!estado) erros.push('Informe o estado.');
+  else if (!ESTADOS.includes(estado)) erros.push('Estado inválido.');
+
+  const pagamento = textoOpcional(corpo.pagamento) ?? 'gratuito';
+  let valor = null;
+  if (!FORMAS_PAGAMENTO.includes(pagamento)) {
+    erros.push('Forma de pagamento inválida.');
+  } else if (pagamento !== 'gratuito') {
+    // Aceita "20", "20.50" ou "20,50"
+    valor = Number(String(corpo.valor ?? '').trim().replace(',', '.'));
+    if (!corpo.valor || !Number.isFinite(valor) || valor <= 0 || valor > 100000) {
+      erros.push('Informe o valor da entrada (maior que zero).');
+    } else {
+      valor = Math.round(valor * 100) / 100;
+    }
+  }
 
   const idade_minima = Number(corpo.idade_minima ?? 0);
   if (!IDADES_PERMITIDAS.includes(idade_minima)) erros.push('Idade mínima inválida.');
@@ -62,8 +89,17 @@ export function validarResenha(corpo = {}) {
   if (erros.length > 0) return { erros };
 
   return {
-    dados: { nome, data, horario, local, idade_minima, limite_pessoas, bebidas_comidas, descricao },
+    dados: { nome, data, horario, local, cidade, estado, pagamento, valor, idade_minima, limite_pessoas, bebidas_comidas, descricao },
   };
+}
+
+/**
+ * Normaliza o código do organizador ("k7m-p2q" vira "K7MP2Q").
+ * Retorna o código ou null se o formato for inválido.
+ */
+export function validarCodigo(valor) {
+  const codigo = String(valor ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  return /^[A-Z0-9]{6}$/.test(codigo) ? codigo : null;
 }
 
 /** Converte o parâmetro :id em número inteiro positivo, ou retorna null. */
