@@ -13,3 +13,4 @@ router.post('/', limitarTentativas({ maximo: 20, janelaMs: 60 * 60_000 }), contr
 router.post('/:id/presenca', limitarTentativas({ maximo: 30, janelaMs: 60_000 }), controller.confirmarPresenca); // confirma presença (precisa estar logado)
 
 export default router;
+ 

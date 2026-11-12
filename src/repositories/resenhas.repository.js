@@ -1,6 +1,7 @@
 // CAMADA 4 — Repository: único lugar que conversa com o banco de dados (SQL).
 import { pool } from '../config/db.js';
 
+
 // Formata data e horário no próprio SQL para evitar problemas de fuso horário no JavaScript.
 const CAMPOS = `
   id, nome,

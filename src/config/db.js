@@ -1,9 +1,12 @@
 import 'dotenv/config';
 import { Pool } from 'pg';
 
-// O Pool lê automaticamente PGHOST, PGPORT, PGDATABASE, PGUSER e PGPASSWORD do .env
-export const pool = new Pool();
+export const pool = new Pool({
+  connectionTimeoutMillis: 5000,
+  idleTimeoutMillis: 30000,
+  max: 10,
+});
 
-pool.on('error', (erro) => {
-  console.error('Erro inesperado na conexão com o banco:', erro.message);
+pool.on('error', () => {
+  console.error('Erro inesperado em uma conexão ociosa com o PostgreSQL.');
 });
