@@ -7,7 +7,7 @@ const router = Router();
 
 // Limites contra força bruta e criação de contas em massa
 const limiteLogin = limitarTentativas({ maximo: 10, janelaMs: 15 * 60_000 });
-const limiteCadastro = limitarTentativas({ maximo: 5, janelaMs: 60 * 60_000 });
+const limiteCadastro = limitarTentativas({ maximo: 10, janelaMs: 60 * 60_000 });
 
 router.post('/cadastro', limiteCadastro, controller.cadastrar);
 router.post('/login', limiteLogin, controller.entrar);
