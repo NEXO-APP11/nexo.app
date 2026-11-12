@@ -1,6 +1,6 @@
 // CAMADA 1 — Routes: apenas liga cada URL/método HTTP ao controller.
 import { Router } from 'express';
-import controller from '../controllers/resenhas.controller.js';
+import {controller} from '../controllers/resenhas.controller.js';
 
 const router = Router();
 
@@ -13,3 +13,4 @@ router.post('/:id/presenca', controller.confirmarPresenca);  // confirma presen�
 router.delete('/:id', controller.remover);                   // remove uma resenha
 
 export default router;
+ 

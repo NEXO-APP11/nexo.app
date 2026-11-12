@@ -1,5 +1,5 @@
 // CAMADA 3 — Service: regras de negócio. Não conhece Express nem SQL.
-import resenhasRepository from '../repositories/resenhas.repository.js';
+import {resenhasRepository} from '../repositories/resenhas.repository.js';
 import { validarResenha } from '../validation/resenha.validation.js';
 import { AppError } from '../errors/AppError.js';
 
