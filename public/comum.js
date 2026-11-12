@@ -190,7 +190,9 @@ function validarNoNavegador(form, mensagemEl) {
   if (form.checkValidity()) return true;
   const invalido = form.querySelector(':invalid');
   const rotulo = form.querySelector(`label[for="${invalido.id}"]`)?.firstChild.textContent.trim();
-  mensagemEl.textContent = `Confira o campo "${rotulo}": ${invalido.validationMessage}`;
+  mensagemEl.textContent = rotulo
+    ? `Confira o campo "${rotulo}": ${invalido.validationMessage}`
+    : invalido.validationMessage;
   mensagemEl.className = 'form-message erro';
   invalido.focus();
   return false;

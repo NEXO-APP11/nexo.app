@@ -130,6 +130,177 @@
                     <button type="button" class="btn-primary" id="btn-convite">Copiar link de convite</button>
                 </div>
 
+                <!-- ================= EDITAR INFORMAÇÕES ================= -->
+
+                <details class="secao-org" id="secao-editar">
+                    <summary><span aria-hidden="true">✏️</span> Editar informações</summary>
+
+                    <form class="form-editar" id="form-editar" novalidate>
+                        <div class="form-group">
+                            <label for="ed-nome">Nome da resenha</label>
+                            <input id="ed-nome" name="nome" type="text" maxlength="100" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="ed-data">Data</label>
+                                <input id="ed-data" name="data" type="date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="ed-horario">Horário</label>
+                                <input id="ed-horario" name="horario" type="time" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ed-local">Local</label>
+                            <input id="ed-local" name="local" type="text" maxlength="150" required>
+                        </div>
+
+                        <fieldset class="balao-local">
+                            <legend><span aria-hidden="true">📍</span> Onde fica?</legend>
+                            <div class="form-row form-row-estado">
+                                <div class="form-group">
+                                    <label for="ed-estado">Estado</label>
+                                    <select id="ed-estado" name="estado" required>
+                                        <option value="">UF</option>
+                                        <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+                                        <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+                                        <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+                                        <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+                                        <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+                                        <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+                                        <option>SP</option><option>SE</option><option>TO</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="ed-cidade">Cidade</label>
+                                    <input id="ed-cidade" name="cidade" type="text" maxlength="100" required
+                                           list="ed-lista-cidades" autocomplete="off">
+                                    <datalist id="ed-lista-cidades"></datalist>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="ed-pagamento">Pagamento</label>
+                                <select id="ed-pagamento" name="pagamento">
+                                    <option value="gratuito">Gratuita</option>
+                                    <option value="pix">Pix</option>
+                                    <option value="dinheiro">Dinheiro</option>
+                                    <option value="cartao">Cartão</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="ed-grupo-valor" hidden>
+                                <label for="ed-valor">Valor (R$)</label>
+                                <input id="ed-valor" name="valor" type="number" min="0.01" max="100000"
+                                       step="0.01" inputmode="decimal">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="ed-idade">Idade mínima</label>
+                                <select id="ed-idade" name="idade_minima">
+                                    <option value="0">Sem restrição</option>
+                                    <option value="16">16 anos</option>
+                                    <option value="18">18 anos</option>
+                                    <option value="21">21 anos</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="ed-limite">Limite de pessoas <span class="opcional">(opcional)</span></label>
+                                <input id="ed-limite" name="limite_pessoas" type="number" min="1" max="10000"
+                                       step="1" inputmode="numeric">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ed-bebidas">Bebidas / comidas <span class="opcional">(opcional)</span></label>
+                            <input id="ed-bebidas" name="bebidas_comidas" type="text" maxlength="255">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ed-descricao">Descrição <span class="opcional">(opcional)</span></label>
+                            <textarea id="ed-descricao" name="descricao" maxlength="1000"></textarea>
+                        </div>
+
+                        <p class="form-message" id="mensagem-editar" role="alert"></p>
+
+                        <div class="modal-actions">
+                            <button type="button" class="btn-secondary" id="btn-desfazer">Desfazer alterações</button>
+                            <button type="submit" class="btn-primary">Salvar alterações</button>
+                        </div>
+                    </form>
+                </details>
+
+                <!-- ================= CALCULADORA DE CUSTOS ================= -->
+
+                <details class="secao-org" id="secao-calculadora">
+                    <summary><span aria-hidden="true">🧮</span> Calculadora de custos</summary>
+
+                    <form class="calculadora" id="form-calculadora" novalidate>
+                        <p class="calc-ajuda">
+                            Coloque quanto vai gastar e veja quanto cobrar por pessoa para não ter prejuízo.
+                            Os valores ficam salvos só neste navegador.
+                        </p>
+
+                        <div class="calc-gastos">
+                            <div class="form-group">
+                                <label for="custo-bebidas">🥤 Bebidas (R$)</label>
+                                <input id="custo-bebidas" name="bebidas" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00">
+                            </div>
+                            <div class="form-group">
+                                <label for="custo-comida">🍕 Comida (R$)</label>
+                                <input id="custo-comida" name="comida" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00">
+                            </div>
+                            <div class="form-group">
+                                <label for="custo-local">🏠 Local / aluguel (R$)</label>
+                                <input id="custo-local" name="local" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00">
+                            </div>
+                            <div class="form-group">
+                                <label for="custo-som">🎵 Som / DJ / decoração (R$)</label>
+                                <input id="custo-som" name="som" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00">
+                            </div>
+                            <div class="form-group">
+                                <label for="custo-outros">📦 Outros (R$)</label>
+                                <input id="custo-outros" name="outros" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00">
+                            </div>
+                            <div class="form-group">
+                                <label for="custo-publico">👥 Público esperado</label>
+                                <input id="custo-publico" name="publico" type="number" min="1" step="1" inputmode="numeric">
+                            </div>
+                        </div>
+
+                        <div class="calc-resultado" aria-live="polite">
+                            <div class="stat">
+                                <span class="stat-numero" id="calc-total">R$ 0,00</span>
+                                <span class="stat-rotulo">custo total</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-numero" id="calc-por-pessoa">R$ 0,00</span>
+                                <span class="stat-rotulo">custo por pessoa</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-numero" id="calc-arrecadacao">R$ 0,00</span>
+                                <span class="stat-rotulo" id="calc-arrecadacao-rotulo">arrecadação com o público esperado</span>
+                            </div>
+                            <div class="stat" id="calc-saldo-box">
+                                <span class="stat-numero" id="calc-saldo">R$ 0,00</span>
+                                <span class="stat-rotulo" id="calc-saldo-rotulo">saldo</span>
+                            </div>
+                        </div>
+
+                        <p class="calc-sugestao" id="calc-sugestao"></p>
+
+                        <div class="modal-actions">
+                            <button type="button" class="btn-secondary" id="btn-limpar-calc">Limpar</button>
+                            <button type="button" class="btn-primary" id="btn-usar-valor" disabled>Usar como valor da entrada</button>
+                        </div>
+                    </form>
+                </details>
+
                 <div class="zona-perigo">
                     <div>
                         <strong>Excluir resenha</strong>
