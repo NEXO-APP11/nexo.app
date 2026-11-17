@@ -5,6 +5,9 @@ import { readFile } from 'node:fs/promises';
 import pg from 'pg';
 
 const nomeBanco = process.env.PGDATABASE || 'nexo';
+// Banco na nuvem (Neon): o banco já existe, só criamos as tabelas
+const urlBanco = process.env.DATABASE_URL;
+const opcoesNuvem = urlBanco && { connectionString: urlBanco, ssl: { rejectUnauthorized: true } };
 
 async function criarBancoSeNaoExistir() {
   // Conecta no banco padrão "postgres" só para poder criar o banco da aplicação
@@ -23,7 +26,7 @@ async function criarBancoSeNaoExistir() {
 
 async function criarTabelas() {
   const sql = await readFile(new URL('./schema.sql', import.meta.url), 'utf8');
-  const cliente = new pg.Client({ database: nomeBanco });
+  const cliente = new pg.Client(opcoesNuvem || { database: nomeBanco });
   await cliente.connect();
   try {
     await cliente.query(sql);
@@ -33,7 +36,7 @@ async function criarTabelas() {
 }
 
 try {
-  await criarBancoSeNaoExistir();
+  if (!urlBanco) await criarBancoSeNaoExistir();
   await criarTabelas();
   console.log('Banco de dados pronto! Tabela "resenhas" criada.');
 } catch (erro) {
