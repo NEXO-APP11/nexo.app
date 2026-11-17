@@ -1,6 +1,10 @@
 {
+  "type": "module",
   "scripts": {
-    "nexo": "node --watch/src/server.js"
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "db:init": "node src/database/init.js",
+    "nexo": "node --watch src/server.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
