@@ -8,6 +8,7 @@ import authRouter from './routes/auth.routes.js';
 import { AppError } from './errors/AppError.js';
 import { cabecalhosSeguranca, semCache, mesmaOrigem } from './middlewares/seguranca.js';
 import { carregarUsuario } from './middlewares/autenticacao.js';
+import { pool } from './config/db.js';
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;
@@ -69,17 +70,22 @@ app.use((erro, req, res, next) => {
   res.status(500).json({ erro: 'Erro interno do servidor.' });
 });
 
-app.listen(port, () => {
-  console.log(`NEXO rodando em http://localhost:${port}`);
-});
+// Na Vercel quem recebe as requisições é a própria plataforma: só exportamos o app
+export default app;
 
-async function shutdown(signal) {
-  console.log(`Recebido ${signal}; encerrando servidor.`);
-  server.close(async () => {
-    await pool.end();
-    process.exit(0);
+if (!process.env.VERCEL) {
+  const server = app.listen(port, () => {
+    console.log(`NEXO rodando em http://localhost:${port}`);
   });
-}
 
-process.once('SIGINT', () => shutdown('SIGINT'));
-process.once('SIGTERM', () => shutdown('SIGTERM'));
+  async function shutdown(signal) {
+    console.log(`Recebido ${signal}; encerrando servidor.`);
+    server.close(async () => {
+      await pool.end();
+      process.exit(0);
+    });
+  }
+
+  process.once('SIGINT', () => shutdown('SIGINT'));
+  process.once('SIGTERM', () => shutdown('SIGTERM'));
+}
